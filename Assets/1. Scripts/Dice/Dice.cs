@@ -12,6 +12,11 @@ public abstract class Dice : MonoBehaviour
         diceRigidbody = GetComponent<Rigidbody>();
     }
 
+    private void Start()
+    {
+        ThrowDice();
+    }
+
     public void ThrowDice()
     {
         if (diceRigidbody == null)

@@ -1,8 +1,14 @@
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
+using System.Collections.Generic;
+using System.Collections;
 
 public class DiceManager : BaseObjectManager<DiceManager, Dice>
 {
+    private int _activeDiceCount = 0;
+    private Coroutine cameraResetCoroutine = null;
+
+    public int _diceResult;
+
     public Camera mainCamera;
     public Camera diceCamera;
 
@@ -39,15 +45,52 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
         return dice;
     }
 
+    public List<Dice> SpawnMultipleDice(int id, int count, Transform parent, Vector3 startPos, Quaternion rotation)
+    {
+        List<Dice> diceList = new List<Dice>();
+
+        for (int i = 0; i < count; i++)
+        {
+            Vector3 offsetPos = startPos + new Vector3(i * 2f, 0, 0); // 위치 간격 조절
+            Dice dice = SpawnDice(id, offsetPos, rotation);
+            if (dice != null)
+            {
+                dice.transform.SetParent(parent); // 부모 설정
+                diceList.Add(dice);
+            }
+        }
+
+        return diceList;
+    }
+
     public Dice SpawnDice(int id, Vector3 position, Quaternion rotation)
     {
         Dice dice = Spawn(id, position, rotation);
         if (dice != null)
         {
+            _activeDiceCount++;
             SetDiceCamera(true, dice.transform);
-            dice.OnDiceStopped += () => SetDiceCamera(false, null);
+
+            dice.OnDiceStopped += () =>
+            {
+                _activeDiceCount--;
+
+                if (_activeDiceCount <= 0)
+                {
+                    if (cameraResetCoroutine != null)
+                        StopCoroutine(cameraResetCoroutine);
+
+                    cameraResetCoroutine = StartCoroutine(DelayedCameraReset());
+                }
+            };
         }
         return dice;
+    }
+
+    private IEnumerator DelayedCameraReset()
+    {
+        yield return new WaitForSeconds(1f);
+        SetDiceCamera(false, null);
     }
 
     private void SetDiceCamera(bool isDiceView, Transform diceTransform)
@@ -59,8 +102,8 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
             diceCamera.enabled = true;
             mainCamera.enabled = false;
 
-            diceCamera.transform.position = diceTransform.position + new Vector3(0, 2, -3);
-            diceCamera.transform.LookAt(diceTransform);
+            /*diceCamera.transform.position = diceTransform.position + new Vector3(0, 2, -3);
+            diceCamera.transform.LookAt(diceTransform);*/
         }
         else
         {

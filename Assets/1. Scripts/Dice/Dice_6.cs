@@ -20,6 +20,10 @@ public class Dice_6 : Dice
         int topFaceValue = faceValues[topFaceIndex];
 
         Debug.Log("정6면체 윗면 숫자: " + topFaceValue);
+
+        DiceManager.Instance._diceResult += topFaceValue;
+
+        Debug.Log("주사위 숫자합: " + DiceManager.Instance._diceResult);
     }
 
     private int GetTopFaceIndex(Vector3[] normals)
