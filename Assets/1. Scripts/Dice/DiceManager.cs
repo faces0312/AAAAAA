@@ -1,13 +1,17 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using System;
+using Unity.VisualScripting;
+
 
 public class DiceManager : BaseObjectManager<DiceManager, Dice>
 {
-    private int _activeDiceCount = 0;
-    private Coroutine cameraResetCoroutine = null;
-
     public int _diceResult;
+
+    private List<Dice> activeDiceList = new List<Dice>();
+    private Coroutine cameraResetCoroutine = null;
+    private int _activeDiceCount = 0;
 
     public Camera mainCamera;
     public Camera diceCamera;
@@ -17,28 +21,24 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        if (diceCamera != null)
-            diceCamera.enabled = false;
+        if (diceCamera == null)
+            diceCamera = GetComponentInChildren<Camera>(true);
     }
 
     public override Dice CreateObject(int id)
     {
-        string dicePath = $"Prefabs/Dice/Dice_{id}";
-        GameObject dicePrefab = Resources.Load<GameObject>(dicePath);
+        string path = $"Prefabs/Dice/Dice_{id}";
+        GameObject prefab = Resources.Load<GameObject>(path);
 
-        if (dicePrefab == null)
-        {
-            Debug.LogError($"주사위 프리팹을 찾을 수 없음: {dicePath}");
+        if (prefab == null)
             return null;
-        }
 
-        GameObject diceObj = Instantiate(dicePrefab);
-        Dice dice = diceObj.GetComponent<Dice>();
+        GameObject obj = Instantiate(prefab);
+        Dice dice = obj.GetComponent<Dice>();
 
         if (dice == null)
         {
-            Debug.LogError($"주사위 프리팹에 Dice 컴포넌트가 없음: {dicePath}");
-            Destroy(diceObj);
+            Destroy(obj);
             return null;
         }
 
@@ -51,11 +51,11 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
         for (int i = 0; i < count; i++)
         {
-            Vector3 offsetPos = startPos + new Vector3(i * 2f, 0, 0); // 위치 간격 조절
-            Dice dice = SpawnDice(id, offsetPos, rotation);
+            Vector3 offset = startPos + new Vector3(i * 2f, 0, 0);
+            Dice dice = SpawnDice(id, offset, rotation);
             if (dice != null)
             {
-                dice.transform.SetParent(parent); // 부모 설정
+                dice.transform.SetParent(parent);
                 diceList.Add(dice);
             }
         }
@@ -69,10 +69,14 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
         if (dice != null)
         {
             _activeDiceCount++;
-            SetDiceCamera(true, dice.transform);
+            activeDiceList.Add(dice);
+
+            StartCoroutine(DelayedSetDiceCamera(dice.transform));
 
             dice.OnDiceStopped += () =>
             {
+                if (dice.IsDestroyed) return;
+
                 _activeDiceCount--;
 
                 if (_activeDiceCount <= 0)
@@ -87,28 +91,47 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
         return dice;
     }
 
+    private IEnumerator DelayedSetDiceCamera(Transform diceTransform)
+    {
+        yield return new WaitForSeconds(0.01f);
+        SetDiceCamera(true);
+    }
+
     private IEnumerator DelayedCameraReset()
     {
         yield return new WaitForSeconds(1f);
-        SetDiceCamera(false, null);
+        SetDiceCamera(false);
+        UIManager.Instance.throwDiceButton.interactable = true;
     }
 
-    private void SetDiceCamera(bool isDiceView, Transform diceTransform)
+    private void SetDiceCamera(bool useDiceCamera)
     {
-        if (diceCamera == null || mainCamera == null) return;
+        if (mainCamera == null || diceCamera == null) return;
 
-        if (isDiceView)
-        {
-            diceCamera.enabled = true;
-            mainCamera.enabled = false;
+        diceCamera.enabled = useDiceCamera;
+        mainCamera.enabled = !useDiceCamera;
+    }
 
-            /*diceCamera.transform.position = diceTransform.position + new Vector3(0, 2, -3);
-            diceCamera.transform.LookAt(diceTransform);*/
-        }
-        else
+    public void ResetDiceState()
+    {
+        if (cameraResetCoroutine != null)
         {
-            diceCamera.enabled = false;
-            mainCamera.enabled = true;
+            StopCoroutine(cameraResetCoroutine);
+            cameraResetCoroutine = null;
         }
+
+        SetDiceCamera(false);
+
+        foreach (var dice in activeDiceList)
+        {
+            if (dice != null)
+            {
+                dice.MarkAsDestroyed();
+                Destroy(dice.gameObject);
+            }
+        }
+
+        activeDiceList.Clear();
+        _activeDiceCount = 0;
     }
 }

@@ -40,6 +40,11 @@ public class SingletonWithMono<T> : MonoBehaviour where T : MonoBehaviour
         {
             instance = this as T;
             DontDestroyOnLoad(gameObject);
+
+            if (instance is DiceManager diceManager)
+            {
+                CreateDiceCamera(diceManager);
+            }
         }
         else if (instance != this)
         {
@@ -58,5 +63,18 @@ public class SingletonWithMono<T> : MonoBehaviour where T : MonoBehaviour
         {
             instance = null;
         }
+    }
+
+    private void CreateDiceCamera(DiceManager diceManager)
+    {
+        GameObject cameraObj = new GameObject("DiceCamera");
+        cameraObj.transform.SetParent(diceManager.transform);
+        cameraObj.transform.localPosition = new Vector3(0,30,0);
+        cameraObj.transform.localRotation = Quaternion.Euler(90,0,0);
+
+        Camera camera = cameraObj.AddComponent<Camera>();
+
+        camera.enabled = false; // 초기에는 비활성화
+        diceManager.diceCamera = camera; // DiceManager에 연결
     }
 }
