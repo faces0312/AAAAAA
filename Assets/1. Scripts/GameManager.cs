@@ -1,16 +1,36 @@
+using System.Resources;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : BaseGameManager
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public static GameManager Instance { get; private set; }
+
+    protected override void Awake()
     {
-        
+        base.Awake();
+        Instance = this;
     }
 
-    // Update is called once per frame
-    void Update()
+    protected override void AddManagers()
     {
-        
+        _managers.Add(CanvasManager.Instance);
+        _managers.Add(MapGenerator.Instance);
+        _managers.Add(UIManager.Instance);
+    }
+
+    protected override void InitializeManagerForce() { }
+
+    protected override void OnInit()
+    {
+    }
+
+    public T GetManager<T>() where T : class, IBaseManager
+    {
+        foreach (var manager in _managers)
+        {
+            if (manager is T typedManager)
+                return typedManager;
+        }
+        return null;
     }
 }
