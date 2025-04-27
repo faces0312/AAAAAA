@@ -23,7 +23,7 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
     public override Dice CreateObject(int id)
     {
-        string dicePath = $"Prefabs/Dice_{id}";
+        string dicePath = $"Prefabs/Dice/Dice_{id}";
         GameObject dicePrefab = Resources.Load<GameObject>(dicePath);
 
         if (dicePrefab == null)
