@@ -20,6 +20,8 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
     private MapNode[,] nodes = new MapNode[5, 8];
     private HashSet<(int x, int y)> activeNodes = new HashSet<(int x, int y)>();
 
+    private MapNode currentNode;
+
     public void Init()
     {
         mapParent = CanvasManager.Instance.GetMapParent();
@@ -31,6 +33,10 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
 
         MapNodeManager.Instance.Init();
         GenerateMap();
+
+        currentNode = nodes[2, 0]; // 1층 중앙 노드 (y=0)
+        UpdateNodeInteractivity(currentNode, false); // 시작할 땐 자기 자신 비활성화
+
         IsInitialized = true;
     }
 
@@ -45,16 +51,16 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
         nodes = new MapNode[5, 8];
         activeNodes.Clear();
 
-        // 1. 8층(보스), 7층(상점), 1층(시작)만 중앙 노드 생성
+        // 1. 8층(보스), 7층(상점), 1층(시작) 중앙 노드 생성
         for (int y = 0; y < 8; y++)
         {
-            int realFloor = 7 - y;
+            int realFloor = y; // y값 그대로 층 번호로 사용
 
             if (realFloor == 0 || realFloor == 6 || realFloor == 7)
             {
                 int x = 2;
 
-                MapNodeType nodeType = GetNodeTypeForFloor(y);
+                MapNodeType nodeType = GetNodeTypeForFloor(realFloor);
                 int typeId = (int)nodeType;
 
                 MapNode node = MapNodeManager.Instance.CreateObject(typeId);
@@ -72,13 +78,13 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
                 RectTransform rect = node.GetComponent<RectTransform>();
                 rect.anchoredPosition = new Vector2(
                     x * tileWidth - mapCenterOffset.x,
-                    (7 - y) * tileHeight - mapCenterOffset.y
+                    y * tileHeight - mapCenterOffset.y // 수정: y * tileHeight
                 );
             }
         }
 
-        // 2. 2~6층 노드 랜덤 추가
-        for (int y = 2; y < 7; y++)
+        // 2. 2층~7층 노드 랜덤 추가
+        for (int y = 1; y < 6; y++)
         {
             // 왼쪽 (x=0,1)
             List<int> leftCandidates = new List<int> { 0, 1 };
@@ -104,7 +110,7 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
                         RectTransform rect = node.GetComponent<RectTransform>();
                         rect.anchoredPosition = new Vector2(
                             x * tileWidth - mapCenterOffset.x,
-                            (7 - y) * tileHeight - mapCenterOffset.y
+                            y * tileHeight - mapCenterOffset.y
                         );
                     }
                 }
@@ -134,7 +140,7 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
                         RectTransform rect = node.GetComponent<RectTransform>();
                         rect.anchoredPosition = new Vector2(
                             x * tileWidth - mapCenterOffset.x,
-                            (7 - y) * tileHeight - mapCenterOffset.y
+                            y * tileHeight - mapCenterOffset.y
                         );
                     }
                 }
@@ -156,7 +162,7 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
                     RectTransform rect = node.GetComponent<RectTransform>();
                     rect.anchoredPosition = new Vector2(
                         2 * tileWidth - mapCenterOffset.x,
-                        (7 - y) * tileHeight - mapCenterOffset.y
+                        y * tileHeight - mapCenterOffset.y
                     );
                 }
             }
@@ -168,36 +174,56 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
 
     private void ConnectGeneratedNodes()
     {
-        for (int y = 0; y < 7; y++)
+        for (int y = 0; y < 8; y++)
         {
-            for (int x = 0; x < 5; x++)
+            if (y == 0) //  1층 (y=0)
             {
-                MapNode currentNode = nodes[x, y];
-                if (currentNode == null) continue;
-
-                int nextY = y + 1;
-
-                List<MapNode> candidates = new List<MapNode>();
-
-                for (int nextX = 0; nextX < 5; nextX++)
+                MapNode startNode = nodes[2, 0];
+                if (startNode != null)
                 {
-                    MapNode nextNode = nodes[nextX, nextY];
-                    if (nextNode != null)
+                    for (int x = 0; x < 5; x++)
                     {
-                        candidates.Add(nextNode);
+                        MapNode nextNode = nodes[x, 1]; // 2층(y=1)
+                        if (nextNode != null)
+                        {
+                            startNode.ConnectTo(nextNode);
+                        }
                     }
                 }
-
-                if (candidates.Count > 0)
+            }
+            else
+            {
+                for (int x = 0; x < 5; x++)
                 {
-                    candidates.Sort((a, b) => Mathf.Abs(a.x - x).CompareTo(Mathf.Abs(b.x - x)));
+                    MapNode currentNode = nodes[x, y];
+                    if (currentNode == null) continue;
 
-                    currentNode.ConnectTo(candidates[0]);
+                    int nextY = y + 1;
+
+                    if (nextY < 8) // 범위 체크
+                    {
+                        List<MapNode> candidates = new List<MapNode>();
+
+                        for (int nextX = 0; nextX < 5; nextX++)
+                        {
+                            MapNode nextNode = nodes[nextX, nextY];
+                            if (nextNode != null)
+                            {
+                                candidates.Add(nextNode);
+                            }
+                        }
+
+                        if (candidates.Count > 0)
+                        {
+                            candidates.Sort((a, b) => Mathf.Abs(a.x - x).CompareTo(Mathf.Abs(b.x - x)));
+                            currentNode.ConnectTo(candidates[0]);
+                        }
+                    }
                 }
             }
         }
 
-        // 다음 층 노드가 반드시 연결되게
+        // 보정 연결: 끊긴 노드 방지
         for (int y = 1; y < 8; y++)
         {
             for (int x = 0; x < 5; x++)
@@ -233,7 +259,6 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
                     if (prevCandidates.Count > 0)
                     {
                         prevCandidates.Sort((a, b) => Mathf.Abs(a.x - x).CompareTo(Mathf.Abs(b.x - x)));
-
                         prevCandidates[0].ConnectTo(currentNode);
                     }
                 }
@@ -250,23 +275,19 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
         }
     }
 
-    private MapNodeType GetNodeTypeForFloor(int y)
+    private MapNodeType GetNodeTypeForFloor(int floor)
     {
-        int realFloor = 7 - y;
-
-        if (realFloor == 0)
+        if (floor == 0)
             return MapNodeType.Normal;
-        if (realFloor == 6)
+        if (floor == 6)
             return MapNodeType.Shop;
-        if (realFloor == 7)
+        if (floor == 7)
             return MapNodeType.Boss;
-
         return MapNodeType.Normal;
     }
-    
+
     private const float NormalProbability = 0.4f;
     private const float EliteProbability = 0.3f;
-    // Event는 나머지 (1.0 - (Normal + Elite))
 
     private MapNodeType GetRandomNodeType()
     {
@@ -278,5 +299,36 @@ public class MapGenerator : SingletonWithMono<MapGenerator>, IBaseManager
             return MapNodeType.Elite;
         else
             return MapNodeType.Event;
+    }
+
+    public void UpdateNodeInteractivity(MapNode current, bool includeSelf)
+    {
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 5; x++)
+            {
+                MapNode node = nodes[x, y];
+                if (node != null && node.nodeButton != null)
+                    node.nodeButton.interactable = false;
+            }
+        }
+
+        if (includeSelf && current != null && current.nodeButton != null)
+            current.nodeButton.interactable = true;
+
+        foreach (var next in current.connectedNodes)
+        {
+            if (next != null && next.nodeButton != null)
+            {
+                if (next.y == current.y + 1) // y+1로 연결된 노드만 활성화
+                    next.nodeButton.interactable = true;
+            }
+        }
+    }
+
+    public void OnMoveToNode(MapNode targetNode)
+    {
+        currentNode = targetNode;
+        UpdateNodeInteractivity(currentNode, false);
     }
 }

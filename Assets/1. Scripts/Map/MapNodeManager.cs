@@ -31,7 +31,7 @@ public class MapNodeManager : BaseObjectManager<MapNodeManager, MapNode>
             }
             else
             {
-                Debug.LogError($"프리팹에 MapNode 컴포넌트가 없음: {prefab.name}");
+                Debug.Log($"프리팹에 MapNode 컴포넌트가 없음: {prefab.name}");
             }
         }
     }

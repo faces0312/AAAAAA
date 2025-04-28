@@ -12,8 +12,15 @@ public class MapNode : MonoBehaviour
 
     [SerializeField] private GameObject linePrefab; // 연결선용 프리팹 (RectTransform + Image)
 
+    public Button nodeButton;
+
     public void Initialize(MapNodeType type, int x, int y)
     {
+        if (nodeButton == null)
+            nodeButton = GetComponent<Button>();
+
+        nodeButton.onClick.RemoveAllListeners();
+        nodeButton.onClick.AddListener(() => MapGenerator.Instance.OnMoveToNode(this));
         this.type = type;
         this.x = x;
         this.y = y;
@@ -30,7 +37,8 @@ public class MapNode : MonoBehaviour
         if (targetNode == null)
             return;
 
-        connectedNodes.Add(targetNode);
+        if (!connectedNodes.Contains(targetNode))
+            connectedNodes.Add(targetNode);
 
         if (linePrefab != null)
         {
