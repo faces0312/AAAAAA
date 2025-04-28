@@ -4,37 +4,47 @@ using UnityEngine.UI;
 
 public class UIManager : SingletonWithMono<UIManager>, IBaseManager
 {
-    public Button throwDiceButton;
-    public int diceType = 6; // 4, 6, 8 등으로 변경 가능
-    public int diceCount = 2; // 생성할 주사위 수
-
+    private Button throwDiceButton;
     private Transform diceParent;
-    public Vector3 startSpawnPos = new Vector3(0, 2, 0);
 
     public bool IsInitialized { get; set; }
 
     public void Init()
     {
+        throwDiceButton = CanvasManager.Instance.GetThrowDiceButton();
         if (throwDiceButton != null)
         {
             throwDiceButton.onClick.AddListener(OnThrowDiceClicked);
         }
+        else
+        {
+            Debug.LogWarning("[UIManager] throwDiceButton이 존재하지 않습니다.");
+        }
+
+
+        diceParent = CanvasManager.Instance.GetMapParent();
+        if (diceParent == null)
+        {
+            Debug.LogWarning("[UIManager] diceParent가 없어서 새로 생성합니다.");
+            diceParent = new GameObject("DiceParent").transform;
+        }
+
         IsInitialized = true;
     }
 
     private void OnThrowDiceClicked()
     {
-        if (diceParent == null)
-        {
-            diceParent = new GameObject("DiceParent").transform;
-        }
-
         throwDiceButton.interactable = false;
-
         DiceManager.Instance.ResetDiceState();
 
         List<Dice> diceList = DiceManager.Instance.SpawnMultipleDice(
-            diceType, diceCount, diceParent, startSpawnPos, Random.rotation
+            6, 2, diceParent, new Vector3(0, 2, 0), Random.rotation
         );
+    }
+
+    public void EnableThrowDiceButton()
+    {
+        if (throwDiceButton != null)
+            throwDiceButton.interactable = true;
     }
 }

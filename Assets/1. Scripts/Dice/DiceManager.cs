@@ -101,7 +101,8 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
     {
         yield return new WaitForSeconds(1f);
         SetDiceCamera(false);
-        UIManager.Instance.throwDiceButton.interactable = true;
+        if (UIManager.Instance != null)
+            UIManager.Instance.EnableThrowDiceButton();
     }
 
     private void SetDiceCamera(bool useDiceCamera)

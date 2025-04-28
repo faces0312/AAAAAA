@@ -1,11 +1,15 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CanvasManager : SingletonWithMono<CanvasManager>, IBaseManager
 {
     public bool IsInitialized { get; set; }
 
     [Header("Map 관련")]
-    public Transform mapParent;
+    [SerializeField] private Transform mapParent;
+
+    [Header("주사위 관련")]
+    [SerializeField] private Button throwDiceButton;
 
     public void Init()
     {
@@ -19,5 +23,10 @@ public class CanvasManager : SingletonWithMono<CanvasManager>, IBaseManager
     public Transform GetMapParent()
     {
         return mapParent;
+    }
+
+    public Button GetThrowDiceButton()
+    {
+        return throwDiceButton;
     }
 }
