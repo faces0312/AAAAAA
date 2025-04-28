@@ -10,8 +10,6 @@ public class MapNode : MonoBehaviour
     public List<MapNode> connectedNodes = new List<MapNode>();
     private List<Image> lines = new List<Image>(); // 연결선 리스트
 
-    public int incomingCount = 0;
-
     [SerializeField] private GameObject linePrefab; // 연결선용 프리팹 (RectTransform + Image)
 
     public void Initialize(MapNodeType type, int x, int y)
@@ -20,7 +18,6 @@ public class MapNode : MonoBehaviour
         this.x = x;
         this.y = y;
         UpdateUI();
-        incomingCount = 0;
     }
 
     private void UpdateUI()
