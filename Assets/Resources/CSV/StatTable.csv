@@ -1,0 +1,5 @@
+ID,Type,Name,HP,Attack,Defense,Speed
+1,Player,Hero,100,20,10,5
+2,Enemy,Slime,30,5,2,3
+3,Enemy,Goblin,50,10,5,6
+4,Enemy,Dragon,300,50,30,8
