@@ -47,6 +47,8 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
     public List<Dice> SpawnMultipleDice(int id, int count, Transform parent, Vector3 startPos, Quaternion rotation)
     {
+        Debug.Log($"[DiceManager] SpawnMultipleDice 龋免: id={id}, count={count}");
+
         List<Dice> diceList = new List<Dice>();
 
         for (int i = 0; i < count; i++)
@@ -55,8 +57,13 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
             Dice dice = SpawnDice(id, offset, rotation);
             if (dice != null)
             {
+                Debug.Log($"[DiceManager] Dice 积己 己傍 at {offset}");
                 dice.transform.SetParent(parent);
                 diceList.Add(dice);
+            }
+            else
+            {
+                Debug.LogError($"[DiceManager] Dice 积己 角菩 at {offset}");
             }
         }
 

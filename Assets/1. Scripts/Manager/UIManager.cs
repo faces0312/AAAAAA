@@ -22,7 +22,6 @@ public class UIManager : SingletonWithMono<UIManager>, IBaseManager
         }
 
 
-        diceParent = CanvasManager.Instance.GetMapParent();
         if (diceParent == null)
         {
             Debug.LogWarning("[UIManager] diceParent가 없어서 새로 생성합니다.");
@@ -34,6 +33,8 @@ public class UIManager : SingletonWithMono<UIManager>, IBaseManager
 
     private void OnThrowDiceClicked()
     {
+        Debug.Log("[UIManager] 주사위 던지기 클릭");
+
         throwDiceButton.interactable = false;
         DiceManager.Instance.ResetDiceState();
 

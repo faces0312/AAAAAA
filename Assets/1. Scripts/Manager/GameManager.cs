@@ -16,6 +16,7 @@ public class GameManager : BaseGameManager
         _managers.Add(CanvasManager.Instance);
         _managers.Add(MapGenerator.Instance);
         _managers.Add(UIManager.Instance);
+        _managers.Add(BattleManager.Instance);
     }
 
     protected override void InitializeManagerForce() { }
