@@ -35,7 +35,7 @@ public abstract class Dice : MonoBehaviour
         diceRigidbody.linearVelocity = Vector3.zero;
         diceRigidbody.angularVelocity = Vector3.zero;
 
-        diceRigidbody.AddForce(new Vector3(0, 10, 0), ForceMode.Impulse);
+        diceRigidbody.AddForce(new Vector3(0, 8f, 0), ForceMode.Impulse);
         diceRigidbody.AddTorque(UnityEngine.Random.insideUnitSphere * 10, ForceMode.Impulse);
     }
 

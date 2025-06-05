@@ -17,6 +17,6 @@ public class Enemy : MonoBehaviour, IDamageable
     public void TakeDamage(int damage)
     {
         Hp -= damage;
-        Debug.Log($"�� �ǰ�! ������: {damage}, ���� HP: {Hp}");
+        Debug.Log($"적이 받은 데미지: {damage}, 남은 적 체력 HP: {Hp}");
     }
 }

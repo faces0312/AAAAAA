@@ -15,7 +15,10 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
     public Camera mainCamera;
     public Camera diceCamera;
-
+    
+    private GameObject basketPrefab;     //
+    private GameObject spawnedBasket;
+    
     private void Start()
     {
         if (mainCamera == null)
@@ -23,6 +26,10 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
         if (diceCamera == null)
             diceCamera = GetComponentInChildren<Camera>(true);
+
+        basketPrefab = Resources.Load<GameObject>("Prefabs/Dice/Dice_Basket");
+        if (basketPrefab == null)
+            Debug.LogError("Basket 프리팹을 찾을 수 없습니다!");
     }
 
     public override Dice CreateObject(int id)
@@ -48,6 +55,13 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
     public List<Dice> SpawnMultipleDice(int id, int count, Transform parent, Vector3 startPos, Quaternion rotation)
     {
         Debug.Log($"[DiceManager] SpawnMultipleDice ȣ��: id={id}, count={count}");
+
+        if (spawnedBasket == null && basketPrefab != null)
+        {
+            spawnedBasket = Instantiate(basketPrefab, parent);
+            spawnedBasket.transform.localPosition = Vector3.zero;
+            Debug.Log("[DiceManager] DiceBasket 생성 완료");
+        }
 
         List<Dice> diceList = new List<Dice>();
 
@@ -89,10 +103,9 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
                 if (_activeDiceCount <= 0)
                 {
                     ResetDiceState();
-                    //if (cameraResetCoroutine != null)
-                    //    StopCoroutine(cameraResetCoroutine);
-                    
-                    BattleManager.Instance.StartBattle();
+
+                    if (cameraResetCoroutine != null)
+                      StopCoroutine(cameraResetCoroutine);
 
                     cameraResetCoroutine = StartCoroutine(DelayedCameraReset());
                 }
@@ -113,6 +126,7 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
         SetDiceCamera(false);
         if (UIManager.Instance != null)
             UIManager.Instance.EnableThrowDiceButton();
+        BattleManager.Instance.StartBattle();
     }
 
     private void SetDiceCamera(bool useDiceCamera)
@@ -144,5 +158,11 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
         activeDiceList.Clear();
         _activeDiceCount = 0;
+
+        if (spawnedBasket != null)
+        {
+            Destroy(spawnedBasket);
+            spawnedBasket = null;
+        }
     }
 }
