@@ -47,7 +47,7 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
     public List<Dice> SpawnMultipleDice(int id, int count, Transform parent, Vector3 startPos, Quaternion rotation)
     {
-        Debug.Log($"[DiceManager] SpawnMultipleDice È£Ãâ: id={id}, count={count}");
+        Debug.Log($"[DiceManager] SpawnMultipleDice È£ï¿½ï¿½: id={id}, count={count}");
 
         List<Dice> diceList = new List<Dice>();
 
@@ -57,13 +57,13 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
             Dice dice = SpawnDice(id, offset, rotation);
             if (dice != null)
             {
-                Debug.Log($"[DiceManager] Dice »ý¼º ¼º°ø at {offset}");
+                Debug.Log($"[DiceManager] Dice ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ at {offset}");
                 dice.transform.SetParent(parent);
                 diceList.Add(dice);
             }
             else
             {
-                Debug.LogError($"[DiceManager] Dice »ý¼º ½ÇÆÐ at {offset}");
+                Debug.LogError($"[DiceManager] Dice ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ at {offset}");
             }
         }
 
@@ -88,8 +88,11 @@ public class DiceManager : BaseObjectManager<DiceManager, Dice>
 
                 if (_activeDiceCount <= 0)
                 {
-                    if (cameraResetCoroutine != null)
-                        StopCoroutine(cameraResetCoroutine);
+                    ResetDiceState();
+                    //if (cameraResetCoroutine != null)
+                    //    StopCoroutine(cameraResetCoroutine);
+                    
+                    BattleManager.Instance.StartBattle();
 
                     cameraResetCoroutine = StartCoroutine(DelayedCameraReset());
                 }

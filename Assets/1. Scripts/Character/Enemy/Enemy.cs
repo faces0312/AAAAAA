@@ -5,6 +5,10 @@ public class Enemy : MonoBehaviour, IDamageable
     public int Hp = 100;
     [SerializeField] private int fixedDamage = 15;
 
+    void Start()
+    {
+        BattleManager.Instance.SetupEnemy(this);
+    }
     public int GetFixedDamage()
     {
         return fixedDamage;
@@ -13,6 +17,6 @@ public class Enemy : MonoBehaviour, IDamageable
     public void TakeDamage(int damage)
     {
         Hp -= damage;
-        Debug.Log($"Àû ÇÇ°Ý! µ¥¹ÌÁö: {damage}, ³²Àº HP: {Hp}");
+        Debug.Log($"ï¿½ï¿½ ï¿½Ç°ï¿½! ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: {damage}, ï¿½ï¿½ï¿½ï¿½ HP: {Hp}");
     }
 }

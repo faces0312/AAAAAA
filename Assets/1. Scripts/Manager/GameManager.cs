@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class GameManager : BaseGameManager
 {
+    public int floor = 1;
+
     public static GameManager Instance { get; private set; }
 
     protected override void Awake()

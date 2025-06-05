@@ -24,8 +24,10 @@ public class BattleManager : SingletonWithMono<BattleManager>, IBaseManager
 
     public void StartBattle()
     {
-        Debug.Log("ÀüÅõ ½ÃÀÛ!");
-        StartCoroutine(DoBattleTurn());  // ¿©±âºÎÅÍ ÄÚ·çÆ¾À¸·Î!
+        Debug.Log("ì „íˆ¬ ì‹œì‘!");
+        Debug.Log($"í”Œë ˆì´ì–´ ì •ë³´: {_player}");
+        Debug.Log($"ì  ì •ë³´: {_enemy}");
+        StartCoroutine(DoBattleTurn());  // ë°°í‹€í„´ì„ ì½”ë£¨í‹´ìœ¼ë¡œ!
     }
 
     private IEnumerator DoBattleTurn()

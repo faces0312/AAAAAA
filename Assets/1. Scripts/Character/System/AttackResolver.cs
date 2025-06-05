@@ -4,16 +4,9 @@ using UnityEngine;
 
 public class AttackResolver
 {
-    public int ResolveDamage(List<bool> coinResults)
+    public int ResolveDamage(List<bool> coinResults, int baseAttackPower)
     {
         int heads = coinResults.Count(result => result);
-        return heads switch
-        {
-            0 => 0,   // ����
-            1 => 10,
-            2 => 20,
-            3 => 30,
-            _ => 0
-        };
+        return baseAttackPower + (heads * 2);  // 앞면이 나올 때마다 공격력 2씩 증가
     }
 }

@@ -5,26 +5,39 @@ using UnityEngine;
 public class Player : MonoBehaviour, IDamageable
 {
     public int Hp = 100;
+    [SerializeField] int BaseAttackPower = 1;
 
     private CoinSystem _coinSystem = new CoinSystem();
     private AttackResolver _attackResolver = new AttackResolver();
     private DamageComparer _damageComparer = new DamageComparer();
 
+    void Start()
+    {
+        BattleManager.Instance.SetupPlayer(this);
+    }
+
     public IEnumerator StartTurn(int enemyDamage, Action<int> onPlayerWins)
     {
-        Debug.Log("ÇÃ·¹ÀÌ¾î ÅÏ ½ÃÀÛ");
-
         var coinResults = _coinSystem.FlipCoins(3);
-        int playerDamage = _attackResolver.ResolveDamage(coinResults);
+        Debug.Log("Coin Results: " + string.Join(", ", coinResults)); // true/false ë¦¬ìŠ¤íŠ¸ í™•ì¸
+        int playerDamage = _attackResolver.ResolveDamage(coinResults, BaseAttackPower);
+        
+        
+        Debug.Log($"Player Damage: {playerDamage}");
 
-        Debug.Log($"ÇÃ·¹ÀÌ¾î µ¥¹ÌÁö: {playerDamage}, Àû °íÁ¤ µ¥¹ÌÁö: {enemyDamage}");
+        // DiceManagerì˜ ì£¼ì‚¬ìœ„ ê²°ê³¼ë¥¼ ë°ë¯¸ì§€ì— ì¶”ê°€
+        playerDamage += DiceManager.Instance._diceResult;
+
+        Debug.Log($"Player Damage: {playerDamage}");
 
         if (_damageComparer.IsPlayerStronger(playerDamage, enemyDamage))
         {
+            Debug.Log("Player Wins");
             onPlayerWins?.Invoke(playerDamage);
         }
         else
         {
+            Debug.Log("Enemy Wins");
             TakeDamage(enemyDamage);
         }
 
@@ -34,6 +47,6 @@ public class Player : MonoBehaviour, IDamageable
     public void TakeDamage(int damage)
     {
         Hp -= damage;
-        Debug.Log($"ÇÃ·¹ÀÌ¾î ÇÇ°İ! µ¥¹ÌÁö: {damage}, ³²Àº HP: {Hp}");
+        Debug.Log($"ë‚´ê°€ ë°›ì€ ë°ë¯¸ì§€: {damage}, ë‚¨ì€ ë‚˜ì˜ ì²´ë ¥ HP: {Hp}");
     }
 }
